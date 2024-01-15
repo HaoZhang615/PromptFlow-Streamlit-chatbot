@@ -32,20 +32,20 @@ with st.sidebar:
             st.success('You can start chatting now!', icon='👉')
 
 
-logo_path = "Nescafe_logo.png"
-col1, col2, col3 = st.columns([1, 100, 1])
+# logo_path = "Customer_logo.png" # add your own logo path here
+# col1, col2, col3 = st.columns([1, 100, 1])
 
 # Add an empty column on either side of the image column to center it
-with col1:
-    st.write("")
-with col2:
-    st.image(logo_path, width=500)
-    st.title('Brand Creative Assistant') 
-with col3:
-    st.write("")
+# with col1:
+#     st.write("")
+# with col2:
+#     st.image(logo_path, width=500)
+#     st.title('Brand Creative Assistant') 
+# with col3:
+#     st.write("")
 
 
-
+st.title('Chatbot powered by Azure Prompt Flow')  # Add your title
 
 # check if the "messages" session state exists, if not, create it as an empty list
 if "messages" not in st.session_state:

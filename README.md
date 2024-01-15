@@ -4,7 +4,7 @@ A conversational chatbot built in Python using Streamlit and any deployed endpoi
 
 ## Demo App
 
-[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://brandcreativeassistant.streamlit.app/)
+[![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://promptflowchatbot.streamlit.app/)
 
 ## Prerequisite libraries
 

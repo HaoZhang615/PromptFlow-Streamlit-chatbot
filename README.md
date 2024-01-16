@@ -1,6 +1,7 @@
 # 🤖💬 PromptFlow Streamlit Chatbot
 
 A conversational chatbot built in Python using Streamlit and any deployed endpoint of Azure PromptFlow.
+Refactored from this [solution](https://github.com/dataprofessor/openai-chatbot) 
 
 ## Demo App
 
@@ -12,6 +13,9 @@ A conversational chatbot built in Python using Streamlit and any deployed endpoi
 streamlit
 openai
 ```
+## Prerequisite credentials as input to use
+
+![Alt text](aml_endpoint.png)
 
 ## Further Reading
 

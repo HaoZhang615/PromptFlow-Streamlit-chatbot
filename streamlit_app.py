@@ -30,6 +30,11 @@ with st.sidebar:
         model_name = st.text_input('Enter PromptFlow model name:')
         if model_name:
             st.success('You can start chatting now!', icon='👉')
+    def clear_chat_history():
+        st.session_state.messages = []
+        t.session_state.chat_history = []
+    if st.button("Restart Conversation :arrows_counterclockwise:"):
+        clear_chat_history()
 
 
 logo_path = "Nescafe_logo.png"

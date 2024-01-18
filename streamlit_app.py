@@ -30,6 +30,13 @@ with st.sidebar:
         model_name = st.text_input('Enter PromptFlow model name:')
         if model_name:
             st.success('You can start chatting now!', icon='👉')
+        # Button to clear chat history
+    def clear_chat_history():
+        st.session_state.messages = []
+        st.session_state.chat_history = []
+    if st.button("Restart Conversation :arrows_counterclockwise:"):
+        clear_chat_history()
+
 
 
 # logo_path = "Customer_logo.png" # add your own logo path here
@@ -45,7 +52,7 @@ with st.sidebar:
 #     st.write("")
 
 
-st.title('Chatbot powered by Azure Prompt Flow')  # Add your title
+st.title('Chatbot powered by Prompt Flow')  # Add your title
 
 # check if the "messages" session state exists, if not, create it as an empty list
 if "messages" not in st.session_state:

@@ -32,7 +32,7 @@ with st.sidebar:
             st.success('You can start chatting now!', icon='👉')
     def clear_chat_history():
         st.session_state.messages = []
-        t.session_state.chat_history = []
+        st.session_state.chat_history = []
     if st.button("Restart Conversation :arrows_counterclockwise:"):
         clear_chat_history()
 

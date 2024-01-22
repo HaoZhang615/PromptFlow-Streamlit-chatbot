@@ -2,8 +2,8 @@
 import streamlit as st
 import urllib.request
 import json
-
-# Add the path to your local image file
+import base64
+import mimetypes
 
 with st.sidebar:
     # input box for user to enter their PromptFlow endpoint
@@ -30,26 +30,20 @@ with st.sidebar:
         model_name = st.text_input('Enter PromptFlow model name:')
         if model_name:
             st.success('You can start chatting now!', icon='👉')
-        # Button to clear chat history
+
+    # File uploader allows user to add their own image
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
+    if uploaded_file:
+    # Display the uploaded image
+        with st.expander("Image", expanded = True):
+            st.image(uploaded_file, caption=uploaded_file.name, use_column_width=True)
+    
+    # Button to clear chat history
     def clear_chat_history():
         st.session_state.messages = []
         st.session_state.chat_history = []
     if st.button("Restart Conversation :arrows_counterclockwise:"):
         clear_chat_history()
-
-
-
-# logo_path = "Customer_logo.png" # add your own logo path here
-# col1, col2, col3 = st.columns([1, 100, 1])
-
-# Add an empty column on either side of the image column to center it
-# with col1:
-#     st.write("")
-# with col2:
-#     st.image(logo_path, width=500)
-#     st.title('Brand Creative Assistant') 
-# with col3:
-#     st.write("")
 
 
 st.title('Chatbot powered by Prompt Flow')  # Add your title
@@ -63,35 +57,77 @@ if "chat_history" not in st.session_state:
 # iterate over the messages in the session state and display them
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
-        st.markdown(message["content"], unsafe_allow_html=True)  # Render markdown with images
+        if message["role"] == "user" and len(message["content"]) > 1:
+            text_prompt = message["content"][0]
+            image_input = message["content"][1]
+            st.markdown(text_prompt)
+            st.image(image_input, caption="User Image", use_column_width=True)
+        elif message["role"] == "user" and len(message["content"]) == 1:
+            text_prompt = message["content"][0]
+            st.markdown(text_prompt)
+        else:
+            st.markdown(message["content"]) 
 # create an input text box where the user can enter their prompt
-if prompt := st.chat_input("type your request here..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
+if text_prompt := st.chat_input("type your request here..."):
+    if uploaded_file:
+        # Read the content of the file as bytes
+        image_bytes = uploaded_file.getvalue()
+        # Determine MIME type
+        mime_type, _ = mimetypes.guess_type(uploaded_file.name)
+        # Create MIME type variable
+        mime_variable = {"data:{};base64".format(mime_type): base64.b64encode(image_bytes).decode()}
+        st.session_state.messages.append({"role": "user", "content": [text_prompt,uploaded_file]}) 
+    else:
+        st.session_state.messages.append({"role": "user", "content": [text_prompt]})
     with st.chat_message("user"):
-        st.markdown(prompt, unsafe_allow_html=True)  # Render markdown with images
+        st.markdown(text_prompt)
+        if uploaded_file:
+            st.image(uploaded_file, caption=uploaded_file.name, use_column_width=True)
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
-        data = {
-            "chat_input": prompt,
-            "chat_history": st.session_state.chat_history
-        }
+        if uploaded_file:
+            data = {
+                "chat_input": [text_prompt,mime_variable],
+                "chat_history": st.session_state.chat_history
+            }
+        else:
+            data = {
+                "chat_input": [text_prompt],
+                "chat_history": st.session_state.chat_history
+            }
         body = str.encode(json.dumps(data))
         headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key), 'azureml-model-deployment': model_name }
         req = urllib.request.Request(url, body, headers)
-
         response_data = urllib.request.urlopen(req).read()
         response_json = json.loads(response_data.decode('utf-8'))
-        message_placeholder.markdown(response_json.get("chat_output") + "▌", unsafe_allow_html=True)  # Render markdown with images
-        data["chat_history"].append(
-            {
-                "inputs": {
-                    "chat_input": prompt
-                },
-                "outputs": {
-                    "chat_output": response_json.get("chat_output"),
+        message_placeholder.markdown(response_json.get("chat_output") + "▌")  # Render markdown with images
+        if uploaded_file:
+            data["chat_history"].append(
+                {
+                    "inputs": {
+                        "chat_input": [text_prompt,mime_variable]
+                    },
+                    "outputs": {
+                        "chat_output": response_json.get("chat_output"),
+                    }
                 }
-            }
-        )
+            )
+
+        else:
+            data["chat_history"].append(
+                {
+                    "inputs": {
+                        "chat_input": [text_prompt]
+                    },
+                    "outputs": {
+                        "chat_output": response_json.get("chat_output"),
+                    }
+                }
+            )
         st.session_state.chat_history = data["chat_history"]
-        message_placeholder.markdown(response_json.get("chat_output"), unsafe_allow_html=True)  # Render markdown with images
+        # st.write(st.session_state.messages)
+        message_placeholder.markdown(response_json.get("chat_output"))  # Render markdown with images
+        # remove the uploaded file
+
     st.session_state.messages.append({"role": "assistant", "content": response_json.get("chat_output")})
+    

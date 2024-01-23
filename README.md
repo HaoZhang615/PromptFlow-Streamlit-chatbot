@@ -3,7 +3,7 @@
 A conversational chatbot built in Python using Streamlit and any deployed endpoint of Azure PromptFlow.
 Refactored from this [solution](https://github.com/dataprofessor/openai-chatbot) 
 
-The application integrates also the multimodal capability of GPT-4-Vision model (as long as wrapped in the PromptFlow) so it can take images as input and does question answering upon it.
+The application integrates also the multimodal capability of GPT-4-Vision model (as long as wrapped in the PromptFlow) so it can take images as input and does question answering upon it. To enable this capability in Prompt Flow, you have to set the user input as a list instead of a string, follow this [doc](https://learn.microsoft.com/en-us/azure/machine-learning/prompt-flow/how-to-process-image?view=azureml-api-2)
 
 ![Alt text](app_screenshot1.png)
 ![Alt text](app_screenshot2.png)

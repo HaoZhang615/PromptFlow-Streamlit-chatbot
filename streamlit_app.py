@@ -37,15 +37,13 @@ with st.sidebar:
         clear_chat_history()
 
 
-logo_path = "Nescafe_logo.png"
 col1, col2, col3 = st.columns([1, 100, 1])
 
 # Add an empty column on either side of the image column to center it
 with col1:
     st.write("")
 with col2:
-    st.image(logo_path, width=500)
-    st.title('Brand Creative Assistant') 
+    st.title('Chatbot powered by PromptFlow') 
 with col3:
     st.write("")
 

@@ -1,7 +1,6 @@
 # Code refactored from https://docs.streamlit.io/knowledge-base/tutorials/build-conversational-apps
 import streamlit as st
-import urllib.request
-import json
+import requests
 
 # Add the path to your local image file
 
@@ -71,12 +70,10 @@ if prompt := st.chat_input("type your request here..."):
             "chat_input": prompt,
             "chat_history": st.session_state.chat_history
         }
-        body = str.encode(json.dumps(data))
-        headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key), 'azureml-model-deployment': model_name }
-        req = urllib.request.Request(url, body, headers)
+        headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key), 'azureml-model-deployment': model_name}
+        response = requests.post(url, json=data, headers=headers, stream=True)
 
-        response_data = urllib.request.urlopen(req).read()
-        response_json = json.loads(response_data.decode('utf-8'))
+        response_json = response.json()
         message_placeholder.markdown(response_json.get("chat_output") + "▌", unsafe_allow_html=True)  # Render markdown with images
         data["chat_history"].append(
             {
@@ -89,5 +86,5 @@ if prompt := st.chat_input("type your request here..."):
             }
         )
         st.session_state.chat_history = data["chat_history"]
-        message_placeholder.markdown(response_json.get("chat_output"), unsafe_allow_html=True)  # Render markdown with images
+        message_placeholder.markdown(response_json.get("chat_output") + "▌", unsafe_allow_html=True)  # Render markdown with images
     st.session_state.messages.append({"role": "assistant", "content": response_json.get("chat_output")})

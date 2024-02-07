@@ -1,6 +1,6 @@
 # Code refactored from https://docs.streamlit.io/knowledge-base/tutorials/build-conversational-apps
 import streamlit as st
-import urllib.request
+import requests
 import json
 import base64
 import mimetypes
@@ -95,12 +95,11 @@ if text_prompt := st.chat_input("type your request here..."):
                 "chat_input": [text_prompt],
                 "chat_history": st.session_state.chat_history
             }
-        body = str.encode(json.dumps(data))
+        body = json.dumps(data)
         headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key), 'azureml-model-deployment': model_name }
-        req = urllib.request.Request(url, body, headers)
-        response_data = urllib.request.urlopen(req).read()
-        response_json = json.loads(response_data.decode('utf-8'))
-        message_placeholder.markdown(response_json.get("chat_output") + "▌")  # Render markdown with images
+        response = requests.post(url, data=body, headers=headers)
+        response_json = response.json()
+        message_placeholder.markdown(response_json.get("chat_output"))  # Render markdown with images
         if uploaded_file:
             data["chat_history"].append(
                 {
@@ -126,8 +125,5 @@ if text_prompt := st.chat_input("type your request here..."):
             )
         st.session_state.chat_history = data["chat_history"]
         # st.write(st.session_state.messages)
-        message_placeholder.markdown(response_json.get("chat_output"))  # Render markdown with images
-        # remove the uploaded file
 
     st.session_state.messages.append({"role": "assistant", "content": response_json.get("chat_output")})
-    

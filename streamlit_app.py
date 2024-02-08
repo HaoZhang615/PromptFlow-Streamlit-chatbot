@@ -11,29 +11,41 @@ with st.sidebar:
         url = st.secrets['PROMPT_FLOW_ENDPOINT']
     else:
         url = st.text_input('Enter PromptFlow endpoint:', type='password')
-        if url:
-            st.success('Proceed to entering your PromptFlow endpoint key!', icon='👉')
+
     # input box for user to enter their PromptFlow key
     if 'PROMPT_FLOW_KEY' in st.secrets:
         st.success('PromptFlow key already provided!', icon='✅')
         api_key = st.secrets['PROMPT_FLOW_KEY']
     else:
         api_key = st.text_input('Enter PromptFlow key:', type='password')
-        if api_key:
-            st.success('Proceed to entering your PromptFlow model name!', icon='👉')
+
     # input box for user to enter their PromptFlow model name
     if 'PROMPT_FLOW_MODEL_NAME' in st.secrets:
         st.success('PromptFlow model name already provided!', icon='✅')
         model_name = st.secrets['PROMPT_FLOW_MODEL_NAME']
     else:
         model_name = st.text_input('Enter PromptFlow model name:')
-        if model_name:
-            st.success('You can start chatting now!', icon='👉')
-    def clear_chat_history():
-        st.session_state.messages = []
-        st.session_state.chat_history = []
-    if st.button("Restart Conversation :arrows_counterclockwise:"):
-        clear_chat_history()
+
+    # input box for user to enter their key name of chat_input in PromptFlow
+    if 'PROMPT_FLOW_CHAT_INPUT_KEY_NAME' in st.secrets:
+        st.success('PromptFlow chat_input key name already provided!', icon='✅')
+        chat_input_key_name = st.secrets['PROMPT_FLOW_CHAT_INPUT_KEY_NAME']
+    else:
+        chat_input_key_name = st.text_input('Enter your chat_input key name: e.g. chat_input or question')
+
+    # input box for user to enter their key name of chat_history in PromptFlow
+    if 'PROMPT_FLOW_CHAT_HISTORY_KEY_NAME' in st.secrets:
+        st.success('PromptFlow chat_history key name already provided!', icon='✅')
+        chat_history_key_name = st.secrets['PROMPT_FLOW_CHAT_HISTORY_KEY_NAME']
+    else:
+        chat_history_key_name = st.text_input('Enter PromptFlow chat_history key name: e.g. chat_history or history')
+
+    # input box for user to enter their key name of chat_output in PromptFlow
+    if 'PROMPT_FLOW_CHAT_OUTPUT_KEY_NAME' in st.secrets:
+        st.success('PromptFlow model chat_output key name already provided!', icon='✅')
+        chat_output_key_name = st.secrets['PROMPT_FLOW_CHAT_OUTPUT_KEY_NAME']
+    else:
+        chat_output_key_name = st.text_input('Enter PromptFlow chat_output key name: e.g. chat_output or response')
 
 
 col1, col2, col3 = st.columns([1, 100, 1])
@@ -55,36 +67,38 @@ if "messages" not in st.session_state:
 # check if the "chat_history" session state exists, if not, create it as an empty list
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-# iterate over the messages in the session state and display them
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"], unsafe_allow_html=True)  # Render markdown with images
-# create an input text box where the user can enter their prompt
-if prompt := st.chat_input("type your request here..."):
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt, unsafe_allow_html=True)  # Render markdown with images
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty()
-        data = {
-            "chat_input": prompt,
-            "chat_history": st.session_state.chat_history
-        }
-        headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key), 'azureml-model-deployment': model_name}
-        response = requests.post(url, json=data, headers=headers, stream=True)
 
-        response_json = response.json()
-        message_placeholder.markdown(response_json.get("chat_output") + "▌", unsafe_allow_html=True)  # Render markdown with images
-        data["chat_history"].append(
-            {
-                "inputs": {
-                    "chat_input": prompt
-                },
-                "outputs": {
-                    "chat_output": response_json.get("chat_output"),
-                }
+# create a container with fixed height and scroll bar for conversation history
+conversation_container = st.container(height = 600, border=False)
+# create an input text box where the user can enter their prompt
+if text_prompt := st.chat_input("type your request here..."):
+    with conversation_container:
+        st.session_state.messages.append({"role": "user", "content": text_prompt})
+        # iterate over the messages in the session state and display them
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])  # Render markdown with images
+        with st.chat_message("assistant"):
+            message_placeholder = st.empty()
+            data = {
+                chat_input_key_name: text_prompt,
+                chat_history_key_name: st.session_state.chat_history
             }
-        )
-        st.session_state.chat_history = data["chat_history"]
-        message_placeholder.markdown(response_json.get("chat_output") + "▌", unsafe_allow_html=True)  # Render markdown with images
-    st.session_state.messages.append({"role": "assistant", "content": response_json.get("chat_output")})
+            headers = {'Content-Type':'application/json', 'Authorization':('Bearer '+ api_key), 'azureml-model-deployment': model_name}
+            response = requests.post(url, json=data, headers=headers, stream=True)
+
+            response_json = response.json()
+            message_placeholder.markdown(response_json.get(chat_output_key_name), unsafe_allow_html=True)  # Render markdown with images
+            data[chat_history_key_name].append(
+                {
+                    "inputs": {
+                        chat_input_key_name: text_prompt
+                    },
+                    "outputs": {
+                        chat_output_key_name: response_json.get(chat_output_key_name),
+                    }
+                }
+            )
+            st.session_state.chat_history = data[chat_history_key_name]
+            message_placeholder.markdown(response_json.get(chat_output_key_name), unsafe_allow_html=True)  # Render markdown with images
+        st.session_state.messages.append({"role": "assistant", "content": response_json.get(chat_output_key_name)})

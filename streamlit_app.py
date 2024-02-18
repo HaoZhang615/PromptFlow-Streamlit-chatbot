@@ -2,7 +2,12 @@
 import streamlit as st
 import requests
 
-# Add the path to your local image file
+st.set_page_config(
+    page_title="Chatbot powered by Prompt Flow",
+    page_icon="🧊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 with st.sidebar:
     # input box for user to enter their PromptFlow endpoint

@@ -5,6 +5,13 @@ import json
 import base64
 import mimetypes
 
+st.set_page_config(
+    page_title="Chatbot powered by Prompt Flow",
+    page_icon="🧊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 with st.sidebar:
     # input box for user to enter their PromptFlow endpoint
     if 'PROMPT_FLOW_ENDPOINT' in st.secrets:
